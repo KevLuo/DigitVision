@@ -103,7 +103,7 @@ def nn_cost(nn_params, input_layer_size, hidden_layer_size, num_labels, X, y, la
     #grad = np.concatenate([Theta1_grad.T.ravel(), Theta2_grad.T.ravel()])
     #grad = np.concatenate([Theta1_grad.ravel(), Theta2_grad.ravel()])
     
-    print(J)
+    #print(J)
     return [J, grad]
     
     

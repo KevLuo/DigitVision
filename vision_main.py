@@ -6,10 +6,12 @@ import matplotlib.pyplot as plt
 import cost
 import mean_normalization
 import initializeWeights
+import predict as pred
 from scipy import optimize as op
 
 #NOTES:
-    #SHOULD PROBABLY LOOK INTO RANDINITIALIZEWEIGHTS WHICH USES EPSIOLONINIT AND STUFF -- BREAKS SYMMETRY
+    #Should make feed forward into a helper function -- used in cost and predict
+    #Should modify predict to choose the max index out of the 10d labels
     #SHOULD PROBABLY IMPLEMENT THE CHECKING LIKE GRADIENT CHECK AND STUFF
 
 #read in training data
@@ -63,9 +65,15 @@ def gradient(initialParams):
 
 
 #result = op.fmin_tnc(func = network_cost, x0 = initialParams, fprime = gradient)
-result = op.fmin_cg(network_cost, x0 = initialParams, fprime=gradient)
-print(result)
+optimalParams = op.fmin_cg(network_cost, x0 = initialParams, fprime=gradient, maxiter = 100)
 
+#optimalTheta1 is 25 x 785
+optimalTheta1 = optimalParams[0:(hidden_layer_size*(input_layer_size + 1))].reshape(hidden_layer_size, (input_layer_size + 1))
+#optimalTheta2 is 10 x 26
+optimalTheta2 = optimalParams[(hidden_layer_size*(input_layer_size+1)):].reshape(num_labels, (hidden_layer_size + 1))
+
+predictions = pred.predict(optimalTheta1, optimalTheta2, X_train)
+print(np.mean(predictions == y_train))
 
 
 
