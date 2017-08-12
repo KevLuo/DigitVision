@@ -2,16 +2,17 @@ import numpy as np
 import sigmoid as sig
 import sigmoidGradient as sg
 
-def nn_cost(Theta1, Theta2, input_layer_size, hidden_layer_size, num_labels, X, y, lambda_param):
+def nn_cost(nn_params, input_layer_size, hidden_layer_size, num_labels, X, y, lambda_param):
 
 ################################################################################################################## 
     #FEED FORWARD TO OBTAIN HYPOTHESIS MATRIX
-    
+    Theta1 = nn_params[0:(hidden_layer_size*(input_layer_size + 1))].reshape(hidden_layer_size, (input_layer_size + 1))
+    Theta2 = nn_params[(hidden_layer_size*(input_layer_size+1)):].reshape(num_labels, (hidden_layer_size + 1))
     #store the number of training examples for future use
     m = X.shape[0]
     
     #initialize cost
-    J = 0
+    J = 0.0
     
     #Add ones to account for bias term -> X will now be 42,000 x 785
     onesCol = np.ones((X.shape[0], 1))
@@ -42,7 +43,7 @@ def nn_cost(Theta1, Theta2, input_layer_size, hidden_layer_size, num_labels, X, 
     
     #loop through each ith example and cumulatively record cost
     for i in range(0, m):
-        J += (-1/m) * ( (np.dot(y_labels[i, :], np.log(hypothesis[i, :]).T)) + np.dot((1 - y_labels[i, :]), np.log(1 - hypothesis[i, :].T )) )
+        J += (-1.0/m) * ( (np.dot(y_labels[i, :], np.log(hypothesis[i, :].T))) + np.dot((1.0 - y_labels[i, :]), np.log(1.0 - hypothesis[i, :].T )) )
         
 ##################################################################################################################
     #REGULARIZE COST
@@ -98,7 +99,12 @@ def nn_cost(Theta1, Theta2, input_layer_size, hidden_layer_size, num_labels, X, 
     Theta2_grad[:, 1:] = (1.0/m) * Delta_2[:, 1:] + (lambda_param/m) * Theta2[:, 1:]
     
     #unroll gradients into one variable
-    grad = np.concatenate([Theta1_grad.T.ravel(), Theta2_grad.T.ravel()])
+    grad = np.r_[Theta1_grad.ravel(), Theta2_grad.ravel()]
+    #grad = np.concatenate([Theta1_grad.T.ravel(), Theta2_grad.T.ravel()])
+    #grad = np.concatenate([Theta1_grad.ravel(), Theta2_grad.ravel()])
+    
+    print(J)
+    return [J, grad]
     
     
     
