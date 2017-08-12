@@ -13,6 +13,8 @@ from scipy import optimize as op
     #Should make feed forward into a helper function -- used in cost and predict
     #Should modify predict to choose the max index out of the 10d labels
     #SHOULD PROBABLY IMPLEMENT THE CHECKING LIKE GRADIENT CHECK AND STUFF
+    
+    #submission_1.csv -- (93.243% accurate)
 
 #read in training data
 train = pd.read_csv("train.csv")
@@ -72,8 +74,14 @@ optimalTheta1 = optimalParams[0:(hidden_layer_size*(input_layer_size + 1))].resh
 #optimalTheta2 is 10 x 26
 optimalTheta2 = optimalParams[(hidden_layer_size*(input_layer_size+1)):].reshape(num_labels, (hidden_layer_size + 1))
 
-predictions = pred.predict(optimalTheta1, optimalTheta2, X_train)
-print(np.mean(predictions == y_train))
+training_predictions = pred.predict(optimalTheta1, optimalTheta2, X_train)
+trainingAccuracy = np.mean(training_predictions == y_train)
+
+print(trainingAccuracy)
+
+test_predictions = pred.predict(optimalTheta1, optimalTheta2, X_test)
+np.savetxt("submission_1.csv", np.c_[range(1, X_test.shape[0] + 1), test_predictions], delimiter = ',',
+           header = "ImageId,Label", comments = '', fmt = "%d")
 
 
 
