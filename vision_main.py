@@ -7,14 +7,21 @@ import cost
 import mean_normalization
 import initializeWeights
 import predict as pred
+import validationCurve as vc
 from scipy import optimize as op
+from sklearn.cross_validation import train_test_split
 
 #NOTES:
-    #Should make feed forward into a helper function -- used in cost and predict
-    #Should modify predict to choose the max index out of the 10d labels
-    #SHOULD PROBABLY IMPLEMENT THE CHECKING LIKE GRADIENT CHECK AND STUFF
+    #SHOULD PROBABLY IMPLEMENT THE CHECKING LIKE GRADIENT CHECK
+    #TODO:  PCA dimensionality reduction
+    #TODO:  Vectorize Cost function?
     
     #submission_1.csv -- (93.243% accurate)
+    #submission_2.csv -- (92.457% accurate)
+    #submission_3.csv -- (93.7% accurate)
+    
+    #Originally, when cost and gradient were in the same function:  47 minutes to run validation curves
+    #When separated out into separate functions and the creation of feedforward helper -> 26 min -> key is less loops to run
 
 #read in training data
 train = pd.read_csv("train.csv")
@@ -32,6 +39,13 @@ X_test = test.values.astype('float32')
 #Apply mean normalization
 X_train = mean_normalization.normalize(X_train)
 X_test = mean_normalization.normalize(X_test)
+
+#Split training data into train set and cross-validation set
+#X_train is 31,500 x 784
+#y_train is 31,500 x 1
+#X_val is 10,500 x 784
+#y_val is 10,500 x 1
+X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size = 0.25)
 
 #visualize a few images
 #X_train_images = X_train.reshape(X_train.shape[0], 28, 28)
@@ -58,16 +72,11 @@ initialParams = np.r_[Theta1.ravel(), Theta2.ravel()]
 num_training_examples = X_train.shape[0]
 
 
-#Train the Neural Network
-def network_cost(initialParams):
-    return cost.nn_cost(initialParams, input_layer_size, hidden_layer_size, num_labels, X_train, y_train, 0.0)[0]
-
-def gradient(initialParams):
-    return cost.nn_cost(initialParams, input_layer_size, hidden_layer_size, num_labels, X_train, y_train, 0.0)[1]
-
-
 #result = op.fmin_tnc(func = network_cost, x0 = initialParams, fprime = gradient)
-optimalParams = op.fmin_cg(network_cost, x0 = initialParams, fprime=gradient, maxiter = 100)
+#Running time of 100 iterations:  10 min
+#Running time of 300 iterations:  56 min --> lower test accuracy than 100 (92.457%)
+args = (input_layer_size, hidden_layer_size, num_labels, X_train, y_train, 5.0)
+optimalParams = op.fmin_cg(cost.nn_cost, x0 = initialParams, fprime=cost.backprop, args = args, maxiter = 100)
 
 #optimalTheta1 is 25 x 785
 optimalTheta1 = optimalParams[0:(hidden_layer_size*(input_layer_size + 1))].reshape(hidden_layer_size, (input_layer_size + 1))
@@ -77,10 +86,14 @@ optimalTheta2 = optimalParams[(hidden_layer_size*(input_layer_size+1)):].reshape
 training_predictions = pred.predict(optimalTheta1, optimalTheta2, X_train)
 trainingAccuracy = np.mean(training_predictions == y_train)
 
+print('training accuracy')
 print(trainingAccuracy)
 
+#vc.generateValidation(X_train, y_train, X_val, y_val, initialParams, input_layer_size, hidden_layer_size, num_labels)
+
 test_predictions = pred.predict(optimalTheta1, optimalTheta2, X_test)
-np.savetxt("submission_1.csv", np.c_[range(1, X_test.shape[0] + 1), test_predictions], delimiter = ',',
+
+np.savetxt("submission_3.csv", np.c_[range(1, X_test.shape[0] + 1), test_predictions], delimiter = ',',
            header = "ImageId,Label", comments = '', fmt = "%d")
 
 

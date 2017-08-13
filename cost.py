@@ -2,17 +2,10 @@ import numpy as np
 import sigmoid as sig
 import sigmoidGradient as sg
 
-def nn_cost(nn_params, input_layer_size, hidden_layer_size, num_labels, X, y, lambda_param):
-
-################################################################################################################## 
-    #FEED FORWARD TO OBTAIN HYPOTHESIS MATRIX
+def feedForward(nn_params, X, input_layer_size, hidden_layer_size, num_labels):
+    
     Theta1 = nn_params[0:(hidden_layer_size*(input_layer_size + 1))].reshape(hidden_layer_size, (input_layer_size + 1))
     Theta2 = nn_params[(hidden_layer_size*(input_layer_size+1)):].reshape(num_labels, (hidden_layer_size + 1))
-    #store the number of training examples for future use
-    m = X.shape[0]
-    
-    #initialize cost
-    J = 0.0
     
     #Add ones to account for bias term -> X will now be 42,000 x 785
     onesCol = np.ones((X.shape[0], 1))
@@ -32,6 +25,45 @@ def nn_cost(nn_params, input_layer_size, hidden_layer_size, num_labels, X, y, la
     z_3 = np.dot(a_2, Theta2.T)
     #hypothesis is 42,000 x 10
     hypothesis = sig.sigmoid(z_3)
+    
+    return [hypothesis, Theta1, Theta2, a_1, a_2, z_2]
+
+def nn_cost(nn_params, input_layer_size, hidden_layer_size, num_labels, X, y, lambda_param):
+
+################################################################################################################## 
+    #FEED FORWARD TO OBTAIN HYPOTHESIS MATRIX
+    """Theta1 = nn_params[0:(hidden_layer_size*(input_layer_size + 1))].reshape(hidden_layer_size, (input_layer_size + 1))
+    Theta2 = nn_params[(hidden_layer_size*(input_layer_size+1)):].reshape(num_labels, (hidden_layer_size + 1))"""
+    #store the number of training examples for future use
+    m = X.shape[0]
+    
+    #initialize cost
+    J = 0.0
+    
+    feedForwardResults = feedForward(nn_params, X, input_layer_size, hidden_layer_size, num_labels)
+    hypothesis = feedForwardResults[0]
+    Theta1 = feedForwardResults[1]
+    Theta2 = feedForwardResults[2]
+    
+    """#Add ones to account for bias term -> X will now be 42,000 x 785
+    onesCol = np.ones((X.shape[0], 1))
+    X = np.c_[onesCol, X]
+    a_1 = X
+    
+    #Theta1 is 25 x 785
+    #a_1 is 42,000 x 785
+    #z_2 is 42,000 x 25
+    z_2 = np.dot(a_1, Theta1.T)
+    a_2 = sig.sigmoid(z_2)
+    
+    #append column of ones for bias term
+    #a_2 will now be 42,000 x 26
+    #Theta2 is 10 x 26
+    a_2 = np.c_[onesCol, a_2]
+    z_3 = np.dot(a_2, Theta2.T)
+    #hypothesis is 42,000 x 10
+    hypothesis = sig.sigmoid(z_3) """
+
     
 ##################################################################################################################
     #COMPUTE COST FUNCTION USING HYPOTHESIS MATRIX
@@ -69,9 +101,27 @@ def nn_cost(nn_params, input_layer_size, hidden_layer_size, num_labels, X, y, la
     
     #Add regularization term to the unregularized cost
     J += reg_term
+    print(J)
+    return J
     
 ##################################################################################################################   
     #BACKPROPOGATION TO COMPUTE GRADIENTS
+
+def backprop(nn_params, input_layer_size, hidden_layer_size, num_labels, X, y, lambda_param):
+    
+    m = X.shape[0]
+    
+    feedforwardResults = feedForward(nn_params, X, input_layer_size, hidden_layer_size, num_labels)
+    hypothesis = feedforwardResults[0]
+    Theta1 = feedforwardResults[1]
+    Theta2 = feedforwardResults[2]
+    a_1 = feedforwardResults[3]
+    a_2 = feedforwardResults[4]
+    z_2 = feedforwardResults[5]
+    
+    temp_eye = np.eye(num_labels)
+    #y_expanded is 42,000 x 10
+    y_labels = temp_eye[y]
     
     #Compute delta_3
     #delta_3 is 42,000 x 10
@@ -104,7 +154,17 @@ def nn_cost(nn_params, input_layer_size, hidden_layer_size, num_labels, X, y, la
     #grad = np.concatenate([Theta1_grad.ravel(), Theta2_grad.ravel()])
     
     #print(J)
-    return [J, grad]
+    return grad
+    #return [J, grad]
+
+#Train the Neural Network
+def network_cost(initialParams, *args):
+    input_layer_size, hidden_layer_size, num_labels, X_train, y_train, lambda_param, = args
+    return nn_cost(initialParams, input_layer_size, hidden_layer_size, num_labels, X_train, y_train, lambda_param)[0]
+
+def gradient(initialParams, *args):
+    input_layer_size, hidden_layer_size, num_labels, X_train, y_train, lambda_param, = args
+    return nn_cost(initialParams, input_layer_size, hidden_layer_size, num_labels, X_train, y_train, lambda_param)[1]
     
     
     
