@@ -1,6 +1,7 @@
 import numpy as np
 import sigmoid as sig
 import sigmoidGradient as sg
+from sklearn.utils import shuffle
 
 def feedForward(nn_params, X, input_layer_size, hidden_layer_size, num_labels):
     
@@ -32,8 +33,7 @@ def nn_cost(nn_params, input_layer_size, hidden_layer_size, num_labels, X, y, la
 
 ################################################################################################################## 
     #FEED FORWARD TO OBTAIN HYPOTHESIS MATRIX
-    """Theta1 = nn_params[0:(hidden_layer_size*(input_layer_size + 1))].reshape(hidden_layer_size, (input_layer_size + 1))
-    Theta2 = nn_params[(hidden_layer_size*(input_layer_size+1)):].reshape(num_labels, (hidden_layer_size + 1))"""
+    
     #store the number of training examples for future use
     m = X.shape[0]
     
@@ -44,25 +44,6 @@ def nn_cost(nn_params, input_layer_size, hidden_layer_size, num_labels, X, y, la
     hypothesis = feedForwardResults[0]
     Theta1 = feedForwardResults[1]
     Theta2 = feedForwardResults[2]
-    
-    """#Add ones to account for bias term -> X will now be 42,000 x 785
-    onesCol = np.ones((X.shape[0], 1))
-    X = np.c_[onesCol, X]
-    a_1 = X
-    
-    #Theta1 is 25 x 785
-    #a_1 is 42,000 x 785
-    #z_2 is 42,000 x 25
-    z_2 = np.dot(a_1, Theta1.T)
-    a_2 = sig.sigmoid(z_2)
-    
-    #append column of ones for bias term
-    #a_2 will now be 42,000 x 26
-    #Theta2 is 10 x 26
-    a_2 = np.c_[onesCol, a_2]
-    z_3 = np.dot(a_2, Theta2.T)
-    #hypothesis is 42,000 x 10
-    hypothesis = sig.sigmoid(z_3) """
 
     
 ##################################################################################################################
@@ -101,7 +82,7 @@ def nn_cost(nn_params, input_layer_size, hidden_layer_size, num_labels, X, y, la
     
     #Add regularization term to the unregularized cost
     J += reg_term
-    print(J)
+    #print(J)
     return J
     
 ##################################################################################################################   
@@ -155,16 +136,6 @@ def backprop(nn_params, input_layer_size, hidden_layer_size, num_labels, X, y, l
     
     #print(J)
     return grad
-    #return [J, grad]
-
-#Train the Neural Network
-def network_cost(initialParams, *args):
-    input_layer_size, hidden_layer_size, num_labels, X_train, y_train, lambda_param, = args
-    return nn_cost(initialParams, input_layer_size, hidden_layer_size, num_labels, X_train, y_train, lambda_param)[0]
-
-def gradient(initialParams, *args):
-    input_layer_size, hidden_layer_size, num_labels, X_train, y_train, lambda_param, = args
-    return nn_cost(initialParams, input_layer_size, hidden_layer_size, num_labels, X_train, y_train, lambda_param)[1]
     
     
     
