@@ -15,9 +15,9 @@ from sklearn import decomposition
 from sklearn import datasets
 
 #NOTES:
-    #SHOULD PROBABLY IMPLEMENT THE CHECKING LIKE GRADIENT CHECK
     #Perhaps try dropout?
     #More nodes in hidden layer?
+    #mini-batch learning --coursera style?
     
     #submission_1.csv -- (93.243% accurate)
     #submission_2.csv -- (92.457% accurate) -> increased num_iterations from 100 to 300
@@ -52,12 +52,14 @@ X_test = test.values.astype('float32')
 X_train = mean_normalization.normalize(X_train)
 X_test = mean_normalization.normalize(X_test)
 
-#pca = decomposition.PCA(n_components=700)
-#pca.fit(X_train)
-#plt.plot(pca.explained_variance_ratio_)
-#plt.ylabel('% of variance explained')
-#plt.show()
+#visualize PCA to determine the optimal number of components
+pca = decomposition.PCA(n_components=700)
+pca.fit(X_train)
+plt.plot(pca.explained_variance_ratio_)
+plt.ylabel('% of variance explained')
+plt.show()
 
+#Apply PCA
 pca = decomposition.PCA(n_components = 200)
 pca.fit(X_train)
 X_train = pca.transform(X_train)
@@ -96,9 +98,6 @@ initialParams = np.r_[Theta1.ravel(), Theta2.ravel()]
 #Store number of training examples
 num_training_examples = X_train.shape[0]
 
-
-#Running time of 100 iterations:  10 min
-#Running time of 300 iterations:  56 min --> lower test accuracy than 100 (92.457%)
 args = (input_layer_size, hidden_layer_size, num_labels, X_train, y_train, 8.0)
 optimalParams = op.fmin_cg(cost.nn_cost, x0 = initialParams, fprime=cost.backprop, args = args, maxiter = 150)
 
@@ -118,6 +117,7 @@ print(trainingAccuracy)
 
 print('validation accuracy')
 print(validationAccuracy)
+
 #lc.generateLearningCurve(X_train, y_train, X_val, y_val, initialParams, input_layer_size, hidden_layer_size, num_labels, 0.0)
 #vc.generateValidation(X_train, y_train, X_val, y_val, initialParams, input_layer_size, hidden_layer_size, num_labels)
 
